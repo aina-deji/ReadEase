@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReadEase Selection Test</title>
+</head>
+
+<body>
+  
+  <h1>Selection Engine Test</h1>
+  
+  <article id="readingContent">
+    
+    <p data-start="0">
+      Photosynthesis is the process through which green plants
+      make their own food.
+    </p>
+    
+    <p data-start="82">
+      Chlorophyll absorbs light energy from the sun.
+    </p>
+    
+  </article>
+  
+  <button id="testSelection">
+    Test selected text
+  </button>
+  
+  <pre id="result"></pre>
+  
+  <script type="module">
+    import {
+      SelectionService
+    } from "./src/services/learning/selectionService.js";
+    
+    const container = document.querySelector("#readingContent");
+    
+    const service = new SelectionService(container);
+    
+    document.querySelector("#testSelection").addEventListener(
+      "click",
+      () => {
+        
+        const result = service.getSelection();
+        
+        document.querySelector("#result").textContent =
+          JSON.stringify(result, null, 2);
+        
+        console.log(result);
+        
+      }
+    );
+  </script>
+  
+</body>
+
+</html>
