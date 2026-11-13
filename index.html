@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Open+Sans:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Source+Serif+4:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Open+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
 
@@ -52,15 +52,12 @@
               stroke-width="1.7"
               stroke-linejoin="round"
             />
-            <path
-              d="M12 6.5V18.5"
-              stroke="currentColor"
-              stroke-width="1.7"
-            />
+            <path d="M12 6.5V18.5" stroke="currentColor" stroke-width="1.7"/>
           </svg>
         </span>
 
         <span>ReadEase</span>
+
       </a>
 
 
@@ -70,37 +67,55 @@
 
         <nav class="sidebar-nav" aria-label="Main navigation">
 
-          <button class="nav-item active" type="button">
+          <button
+            class="nav-item active"
+            id="sidebarReadingButton"
+            type="button"
+            data-page="reading"
+          >
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M4 5H20V19H4V5Z" stroke="currentColor" stroke-width="1.7"/>
               <path d="M8 9H16M8 13H16M8 17H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
             </svg>
+
             <span>My reading</span>
           </button>
+
 
           <button
             class="nav-item"
             id="sidebarAnnotationsButton"
             type="button"
+            data-page="notes"
           >
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 4H19V20H5V4Z" stroke="currentColor" stroke-width="1.7"/>
               <path d="M8 8H16M8 12H16M8 16H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
             </svg>
+
             <span>My notes</span>
           </button>
 
-          <button class="nav-item" type="button" disabled>
+
+          <button
+            class="nav-item"
+            id="revisionNavButton"
+            type="button"
+            data-page="revision"
+          >
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M4 5H20V19H4V5Z" stroke="currentColor" stroke-width="1.7"/>
-              <path d="M8 9H16M8 13H16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-              <path d="M12 16L14 18L18 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 9H16M8 13H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M14 16L16 18L20 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
+
             <span>Revision</span>
-            <span class="coming-soon">Soon</span>
+
+            <span class="nav-count" id="revisionNavCount">0</span>
           </button>
 
         </nav>
+
       </div>
 
 
@@ -110,7 +125,12 @@
 
           <span class="message-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 3V6M12 18V21M3 12H6M18 12H21M5.6 5.6L7.7 7.7M16.3 16.3L18.4 18.4M18.4 5.6L16.3 7.7M7.7 16.3L5.6 18.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path
+                d="M12 3V6M12 18V21M3 12H6M18 12H21M5.6 5.6L7.7 7.7M16.3 16.3L18.4 18.4M18.4 5.6L16.3 7.7M7.7 16.3L5.6 18.4"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+              />
               <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/>
             </svg>
           </span>
@@ -121,6 +141,7 @@
           </div>
 
         </div>
+
 
         <div class="sidebar-footer">
           <span>ReadEase</span>
@@ -135,6 +156,8 @@
     <!-- MAIN AREA -->
 
     <main class="main-area">
+
+      <!-- TOPBAR -->
 
       <header class="topbar">
 
@@ -151,359 +174,208 @@
           </svg>
         </button>
 
+
         <div class="breadcrumb">
           <span>Workspace</span>
           <span class="breadcrumb-divider">/</span>
           <strong id="breadcrumbCurrent">My reading</strong>
         </div>
 
+
         <div class="topbar-right">
           <span class="offline-indicator">
             <span class="status-dot"></span>
-            Reading workspace
+            Your learning space
           </span>
         </div>
 
       </header>
 
 
-      <section class="page-content">
+      <div class="page-content">
 
-        <!-- PAGE HEADING -->
+        <!-- READING PAGE -->
 
-        <div class="page-heading" id="pageHeading">
+        <section id="readingPage">
 
-          <div>
-            <p class="eyebrow">YOUR PERSONAL LEARNING SPACE</p>
-
-            <h1>Make room for understanding.</h1>
-
-            <p class="page-description">
-              Bring your learning materials. Read comfortably,
-              explore ideas and build lasting understanding.
-            </p>
-          </div>
-
-        </div>
-
-
-        <!-- IMPORT SECTION -->
-
-        <section class="import-section" id="importSection">
-
-          <div class="section-heading">
+          <div class="page-heading" id="pageHeading">
 
             <div>
-              <h2>Start with your material</h2>
-              <p>Paste something you're studying or upload a text file.</p>
-            </div>
+              <p class="eyebrow">YOUR PERSONAL LEARNING SPACE</p>
 
-            <span class="step-indicator">01 / START READING</span>
+              <h1>Make room for understanding.</h1>
 
-          </div>
-
-
-          <div class="import-card">
-
-            <div class="input-group">
-
-              <label for="documentTitle">Document title</label>
-
-              <input
-                type="text"
-                id="documentTitle"
-                placeholder="e.g. Introduction to Biology"
-                maxlength="120"
-              />
-
-            </div>
-
-
-            <div class="input-group">
-
-              <div class="textarea-heading">
-                <label for="documentContent">Your learning material</label>
-                <span id="wordCount">0 words</span>
-              </div>
-
-              <textarea
-                id="documentContent"
-                placeholder="Paste your lesson, notes or reading material here..."
-                spellcheck="true"
-              ></textarea>
-
-            </div>
-
-
-            <div class="import-actions">
-
-              <label
-                for="fileInput"
-                class="button button-secondary upload-button"
-              >
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 15V4M8 8L12 4L16 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M4 15V19C4 20.1 4.9 21 6 21H18C19.1 21 20 20.1 20 19V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-                Upload .txt file
-              </label>
-
-              <input
-                type="file"
-                id="fileInput"
-                accept=".txt,text/plain"
-                hidden
-              />
-
-              <button
-                class="button button-primary"
-                id="startReadingButton"
-                type="button"
-              >
-                Start reading
-
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-
-            </div>
-
-            <p class="form-message" id="formMessage" role="alert"></p>
-
-          </div>
-
-
-          <!-- SAMPLE -->
-
-          <div class="sample-section">
-
-            <div class="sample-heading">
-              <h3>Need somewhere to begin?</h3>
-              <span>TRY A SAMPLE</span>
-            </div>
-
-            <button class="sample-card" id="sampleButton" type="button">
-
-              <span class="sample-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M5 4H19V20H5V4Z" stroke="currentColor" stroke-width="1.7"/>
-                  <path d="M8 8H16M8 12H16M8 16H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                </svg>
-              </span>
-
-              <span class="sample-copy">
-                <strong>Understanding Photosynthesis</strong>
-                <span>A short biology lesson to explore the workspace.</span>
-              </span>
-
-              <svg class="sample-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-
-            </button>
-
-          </div>
-
-        </section>
-
-
-        <!-- READER SECTION -->
-
-        <section class="reader-section hidden" id="readerSection">
-
-          <div class="reader-toolbar">
-
-            <button
-              class="button button-secondary"
-              id="editDocumentButton"
-              type="button"
-            >
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Edit material
-            </button>
-
-
-            <div class="reader-tools">
-
-              <button
-                class="icon-button"
-                id="decreaseFontButton"
-                type="button"
-                aria-label="Decrease text size"
-                title="Decrease text size"
-              >
-                <span class="font-control-small">A−</span>
-              </button>
-
-              <button
-                class="icon-button"
-                id="increaseFontButton"
-                type="button"
-                aria-label="Increase text size"
-                title="Increase text size"
-              >
-                <span class="font-control-large">A+</span>
-              </button>
-
-
-              <button
-                class="button button-secondary"
-                id="annotationsButton"
-                type="button"
-              >
-                My annotations
-              </button>
-
-
-              <button
-                class="button button-secondary"
-                id="accessibilityButton"
-                type="button"
-                aria-expanded="false"
-                aria-controls="accessibilityPanel"
-              >
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
-                  <path d="M12 2V5M12 19V22M2 12H5M19 12H22M4.93 4.93L7.05 7.05M16.95 16.95L19.07 19.07M19.07 4.93L16.95 7.05M7.05 16.95L4.93 19.07" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                </svg>
-                Reading settings
-              </button>
-
-
-              <button
-                class="button button-secondary focus-button"
-                id="focusModeButton"
-                type="button"
-                aria-pressed="false"
-              >
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 9V5H8M16 5H20V9M20 15V19H16M8 19H4V15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Focus mode</span>
-              </button>
-
+              <p class="page-description">
+                Bring your learning materials. Read comfortably,
+                explore ideas and build lasting understanding.
+              </p>
             </div>
 
           </div>
 
 
-          <!-- ACCESSIBILITY PANEL -->
+          <!-- IMPORT -->
 
-          <section
-            class="accessibility-panel hidden"
-            id="accessibilityPanel"
-            aria-label="Reading preferences"
-          >
+          <section class="import-section" id="importSection">
 
-            <div class="accessibility-panel-header">
-
+            <div class="section-heading">
               <div>
-                <h2>Make reading comfortable</h2>
-                <p>Adjust the experience to suit your preferences.</p>
+                <h2>Start with your material</h2>
+                <p>Upload a document or paste something you're studying.</p>
+              </div>
+
+              <span class="step-indicator">01 / START READING</span>
+            </div>
+
+
+            <div class="import-card">
+
+              <div class="input-group">
+
+                <label for="documentTitle">Document title</label>
+
+                <input
+                  type="text"
+                  id="documentTitle"
+                  placeholder="e.g. Introduction to Biology"
+                  maxlength="120"
+                />
+
+              </div>
+
+
+              <div class="input-group">
+
+                <div class="textarea-heading">
+                  <label for="documentContent">Your learning material</label>
+                  <span id="wordCount">0 words</span>
+                </div>
+
+                <textarea
+                  id="documentContent"
+                  placeholder="Paste your lesson, notes or reading material here..."
+                  spellcheck="true"
+                ></textarea>
+
+              </div>
+
+
+              <!-- FILE UPLOAD -->
+
+              <div
+                class="upload-dropzone"
+                id="uploadDropzone"
+              >
+
+                <div class="upload-dropzone__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 15V4M8 8L12 4L16 8"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M4 15V19C4 20.1 4.9 21 6 21H18C19.1 21 20 20.1 20 19V15"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </div>
+
+                <div class="upload-dropzone__copy">
+                  <strong>Drop your learning material here</strong>
+                  <span>or choose a file from your device</span>
+                </div>
+
+                <label
+                  for="fileInput"
+                  class="button button-secondary upload-button"
+                >
+                  Browse files
+                </label>
+
+<input
+  type="file"
+  id="fileInput"
+  accept=".txt,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  hidden
+/>
+
+               <p class="upload-supported">
+  Supported formats: TXT, PDF and DOCX · Maximum 15 MB
+</p>
+
+                <p
+                  class="upload-file-status"
+                  id="uploadFileStatus"
+                  aria-live="polite"
+                ></p>
+
+              </div>
+
+
+              <div class="import-actions">
+
+                <button
+                  class="button button-primary"
+                  id="startReadingButton"
+                  type="button"
+                >
+                  Start reading
+
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M5 12H19M13 6L19 12L13 18"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+
+              </div>
+
+
+              <p class="form-message" id="formMessage" role="alert"></p>
+
+            </div>
+
+
+            <!-- SAMPLE -->
+
+            <div class="sample-section">
+
+              <div class="sample-heading">
+                <h3>Need somewhere to begin?</h3>
+                <span>TRY A SAMPLE</span>
               </div>
 
               <button
-                class="icon-button"
-                id="closeAccessibilityButton"
+                class="sample-card"
+                id="sampleButton"
                 type="button"
-                aria-label="Close reading settings"
               >
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-              </button>
 
-            </div>
-
-
-            <div class="settings-grid">
-
-              <div class="setting-control">
-                <label for="fontFamilySelect">Reading font</label>
-
-                <select id="fontFamilySelect">
-                  <option value="serif">Source Serif</option>
-                  <option value="atkinson">Atkinson Hyperlegible</option>
-                  <option value="sans">Open Sans</option>
-                  <option value="system">System default</option>
-                </select>
-              </div>
-
-
-              <div class="setting-control">
-                <label for="lineSpacingRange">
-                  Line spacing
-                  <output id="lineSpacingValue">1.9</output>
-                </label>
-
-                <input
-                  type="range"
-                  id="lineSpacingRange"
-                  min="1.4"
-                  max="2.4"
-                  step="0.1"
-                  value="1.9"
-                />
-              </div>
-
-
-              <div class="setting-control">
-                <label for="letterSpacingRange">
-                  Letter spacing
-                  <output id="letterSpacingValue">0px</output>
-                </label>
-
-                <input
-                  type="range"
-                  id="letterSpacingRange"
-                  min="0"
-                  max="2"
-                  step="0.1"
-                  value="0"
-                />
-              </div>
-
-
-              <div class="setting-control">
-                <label for="readingThemeSelect">Reading background</label>
-
-                <select id="readingThemeSelect">
-                  <option value="light">Light</option>
-                  <option value="warm">Warm</option>
-                  <option value="dark">Dark</option>
-                </select>
-              </div>
-
-            </div>
-
-
-            <div class="settings-footer">
-
-              <label class="toggle-setting" for="readingRulerToggle">
-
-                <span>
-                  <strong>Reading ruler</strong>
-                  <small>Highlight the line you're following.</small>
+                <span class="sample-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 4H19V20H5V4Z" stroke="currentColor" stroke-width="1.7"/>
+                    <path d="M8 8H16M8 12H16M8 16H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                  </svg>
                 </span>
 
-                <input
-                  type="checkbox"
-                  id="readingRulerToggle"
-                />
+                <span class="sample-copy">
+                  <strong>Understanding Photosynthesis</strong>
+                  <span>A short biology lesson to explore the workspace.</span>
+                </span>
 
-                <span class="toggle-track" aria-hidden="true"></span>
+                <svg class="sample-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
 
-              </label>
-
-              <button
-                class="text-button"
-                id="resetReadingSettings"
-                type="button"
-              >
-                Reset preferences
               </button>
 
             </div>
@@ -511,93 +383,237 @@
           </section>
 
 
-          <!-- SPEECH PLAYER -->
+          <!-- READER -->
 
-          <section class="speech-player" aria-label="Read aloud controls">
+          <section class="reader-section hidden" id="readerSection">
 
-            <div class="speech-info">
+            <div class="reader-toolbar">
 
-              <span class="speech-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M4 10V14H8L13 18V6L8 10H4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                  <path d="M17 9C18.6 10.6 18.6 13.4 17 15M19.5 6.5C22.5 9.5 22.5 14.5 19.5 17.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <button
+                class="button button-secondary"
+                id="editDocumentButton"
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </span>
+                Edit material
+              </button>
 
-              <div>
-                <strong>Listen to your reading</strong>
-                <span id="speechStatus" aria-live="polite">Ready when you are</span>
+
+              <div class="reader-tools">
+
+                <button class="icon-button" id="decreaseFontButton" type="button" aria-label="Decrease text size">
+                  <span class="font-control-small">A−</span>
+                </button>
+
+                <button class="icon-button" id="increaseFontButton" type="button" aria-label="Increase text size">
+                  <span class="font-control-large">A+</span>
+                </button>
+
+                <button class="button button-secondary" id="annotationsButton" type="button">
+                  My annotations
+                </button>
+
+                <button class="button button-secondary" id="accessibilityButton" type="button" aria-expanded="false" aria-controls="accessibilityPanel">
+                  Reading settings
+                </button>
+
+                <button class="button button-secondary focus-button" id="focusModeButton" type="button" aria-pressed="false">
+                  <span>Focus mode</span>
+                </button>
+
+                <button class="button button-primary" id="generateFlashcardsButton" type="button">
+                  Generate flashcards
+                </button>
+
               </div>
 
             </div>
 
 
-            <div class="speech-controls">
+            <p
+              class="flashcard-generation-status"
+              id="flashcardGenerationStatus"
+              aria-live="polite"
+            ></p>
 
-              <button
-                class="button button-primary speech-action"
-                id="speechPlayButton"
-                type="button"
-              >
-                Play
-              </button>
 
-              <button
-                class="button button-secondary speech-action"
-                id="speechPauseButton"
-                type="button"
-                disabled
-              >
-                Pause
-              </button>
+            <!-- ACCESSIBILITY -->
 
-              <button
-                class="button button-secondary speech-action"
-                id="speechStopButton"
-                type="button"
-                disabled
-              >
-                Stop
-              </button>
+            <section class="accessibility-panel hidden" id="accessibilityPanel" aria-label="Reading preferences">
 
+              <div class="accessibility-panel-header">
+
+                <div>
+                  <h2>Make reading comfortable</h2>
+                  <p>Adjust the experience to suit your preferences.</p>
+                </div>
+
+                <button class="icon-button" id="closeAccessibilityButton" type="button" aria-label="Close reading settings">
+                  ✕
+                </button>
+
+              </div>
+
+
+              <div class="settings-grid">
+
+                <div class="setting-control">
+                  <label for="fontFamilySelect">Reading font</label>
+
+                  <select id="fontFamilySelect">
+                    <option value="serif">Source Serif</option>
+                    <option value="atkinson">Atkinson Hyperlegible</option>
+                    <option value="sans">Open Sans</option>
+                    <option value="system">System default</option>
+                  </select>
+                </div>
+
+
+                <div class="setting-control">
+                  <label for="lineSpacingRange">
+                    Line spacing
+                    <output id="lineSpacingValue">1.9</output>
+                  </label>
+
+                  <input type="range" id="lineSpacingRange" min="1.4" max="2.4" step="0.1" value="1.9"/>
+                </div>
+
+
+                <div class="setting-control">
+                  <label for="letterSpacingRange">
+                    Letter spacing
+                    <output id="letterSpacingValue">0px</output>
+                  </label>
+
+                  <input type="range" id="letterSpacingRange" min="0" max="2" step="0.1" value="0"/>
+                </div>
+
+
+                <div class="setting-control">
+                  <label for="readingThemeSelect">Reading background</label>
+
+                  <select id="readingThemeSelect">
+                    <option value="light">Light</option>
+                    <option value="warm">Warm</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                </div>
+
+              </div>
+
+
+              <div class="settings-footer">
+
+                <label class="toggle-setting" for="readingRulerToggle">
+                  <span>
+                    <strong>Reading ruler</strong>
+                    <small>Highlight the line you're following.</small>
+                  </span>
+
+                  <input type="checkbox" id="readingRulerToggle"/>
+                  <span class="toggle-track" aria-hidden="true"></span>
+                </label>
+
+                <button class="text-button" id="resetReadingSettings" type="button">
+                  Reset preferences
+                </button>
+
+              </div>
+
+            </section>
+
+
+            <!-- SPEECH -->
+
+            <section class="speech-player" aria-label="Read aloud controls">
+
+              <div class="speech-info">
+                <div>
+                  <strong>Listen to your reading</strong>
+                  <span id="speechStatus" aria-live="polite">Ready when you are</span>
+                </div>
+              </div>
+
+              <div class="speech-controls">
+                <button class="button button-primary speech-action" id="speechPlayButton" type="button">Play</button>
+                <button class="button button-secondary speech-action" id="speechPauseButton" type="button" disabled>Pause</button>
+                <button class="button button-secondary speech-action" id="speechStopButton" type="button" disabled>Stop</button>
+              </div>
+
+            </section>
+
+
+            <!-- READING CARD -->
+
+            <article class="reading-card" id="readingCard">
+
+              <div class="reading-meta">
+                <span class="reading-category">YOUR READING</span>
+                <span id="readingWordCount">0 words</span>
+              </div>
+
+              <h1 class="reading-title" id="readingTitle"></h1>
+
+              <div class="reading-divider"></div>
+
+              <div class="reading-content" id="readingContent" aria-label="Reading material"></div>
+
+            </article>
+
+
+            <div class="reader-bottom-note">
+              Take your time. Understanding matters more than speed.
             </div>
 
           </section>
 
+        </section>
 
-          <!-- READING CARD -->
 
-          <article class="reading-card" id="readingCard">
+        <!-- REVISION PAGE -->
 
-            <div class="reading-meta">
-              <span class="reading-category">YOUR READING</span>
-              <span id="readingWordCount">0 words</span>
+        <section id="revisionPage" class="workspace-page hidden">
+
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">YOUR LEARNING PROGRESS</p>
+              <h1>Remember what matters.</h1>
+              <p class="page-description">
+                Revisit important concepts and strengthen your understanding over time.
+              </p>
             </div>
-
-            <h1 class="reading-title" id="readingTitle"></h1>
-
-            <div class="reading-divider"></div>
-
-            <div
-              class="reading-content"
-              id="readingContent"
-              aria-label="Reading material"
-            ></div>
-
-          </article>
-
-
-          <div class="reader-bottom-note">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/>
-              <path d="M12 11V16M12 8H12.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-            </svg>
-            Take your time. Understanding matters more than speed.
           </div>
+
+
+          <div
+            id="revisionDashboardContainer"
+            class="revision-dashboard-container"
+          ></div>
 
         </section>
 
-      </section>
+
+        <!-- NOTES PAGE -->
+
+        <section id="notesPage" class="workspace-page hidden">
+
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">YOUR PERSONAL NOTES</p>
+              <h1>Ideas worth keeping.</h1>
+              <p class="page-description">
+                Your saved reading annotations and highlights live here.
+              </p>
+            </div>
+          </div>
+
+          <div id="notesPageContent"></div>
+
+        </section>
+
+      </div>
 
     </main>
 
@@ -606,10 +622,7 @@
 
   <div class="mobile-overlay" id="mobileOverlay"></div>
 
-  <div
-    class="reading-ruler"
-    id="readingRuler"
-    aria-hidden="true"
-  ></div>
+  <div class="reading-ruler" id="readingRuler" aria-hidden="true"></div>
+
 </body>
 </html>

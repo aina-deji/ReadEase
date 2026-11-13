@@ -12,6 +12,35 @@ import {
   initializeAnnotations
 } from "./ui/annotations.js";
 
+import {
+  mountFlashcards
+} from "./ui/flashcards.js";
+
+import {
+  addFlashcards,
+  getRevisionStatistics
+} from "./services/learning/revisionService.js";
+
+import {
+  segmentText
+} from "./algorithms/textSegmenter.js";
+
+import {
+  extractTerms
+} from "./algorithms/termExtractor.js";
+
+import {
+  scoreSentences
+} from "./algorithms/sentenceScorer.js";
+
+import {
+  generateFlashcards
+} from "./algorithms/clozeGenerator.js";
+
+
+// --------------------------------------------------
+// CONSTANTS
+// --------------------------------------------------
 
 const SAMPLE_DOCUMENT = {
   title: "Understanding Photosynthesis",
@@ -27,7 +56,6 @@ Glucose provides energy for the plant and can also be stored for later use. Oxyg
 Photosynthesis is important because it provides food for plants and supports nearly all food chains on Earth. It also helps maintain the balance of oxygen and carbon dioxide in the atmosphere.`
 };
 
-
 const DEFAULT_SETTINGS = {
   fontFamily: "serif",
   fontSize: 19,
@@ -37,7 +65,6 @@ const DEFAULT_SETTINGS = {
   readingRuler: false
 };
 
-
 const FONT_FAMILIES = {
   serif: '"Source Serif 4", Georgia, serif',
   atkinson: '"Atkinson Hyperlegible", Arial, sans-serif',
@@ -45,6 +72,22 @@ const FONT_FAMILIES = {
   system: "system-ui, sans-serif"
 };
 
+const MAX_FILE_SIZE = 15 * 1024 * 1024;
+
+const PDFJS_VERSION = "4.10.38";
+
+const PDFJS_MODULE_URL =
+  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.min.mjs`;
+
+const PDFJS_WORKER_URL =
+  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.mjs`;
+
+let pdfJsPromise = null;
+
+
+// --------------------------------------------------
+// APPLICATION
+// --------------------------------------------------
 
 export function initializeApp() {
 
@@ -57,6 +100,9 @@ export function initializeApp() {
     documentTitle: getElement("#documentTitle"),
     documentContent: getElement("#documentContent"),
     fileInput: getElement("#fileInput"),
+
+    uploadDropzone: getElement("#uploadDropzone"),
+    uploadFileStatus: getElement("#uploadFileStatus"),
 
     wordCount: getElement("#wordCount"),
     formMessage: getElement("#formMessage"),
@@ -105,7 +151,22 @@ export function initializeApp() {
     speechStatus: getElement("#speechStatus"),
 
     annotationsButton: getElement("#annotationsButton"),
-    sidebarAnnotationsButton: getElement("#sidebarAnnotationsButton")
+    sidebarAnnotationsButton: getElement("#sidebarAnnotationsButton"),
+
+    sidebarReadingButton: getElement("#sidebarReadingButton"),
+    revisionNavButton: getElement("#revisionNavButton"),
+    revisionNavCount: getElement("#revisionNavCount"),
+
+    readingPage: getElement("#readingPage"),
+    revisionPage: getElement("#revisionPage"),
+    notesPage: getElement("#notesPage"),
+
+    revisionDashboardContainer: getElement("#revisionDashboardContainer"),
+
+    generateFlashcardsButton: getElement("#generateFlashcardsButton"),
+    flashcardGenerationStatus: getElement("#flashcardGenerationStatus"),
+
+    notesPageContent: getElement("#notesPageContent")
 
   };
 
@@ -116,10 +177,16 @@ export function initializeApp() {
 
   let currentDocument = null;
 
+  let activePage = "reading";
+
+  let revisionDashboard = null;
+
   const speech = new SpeechService();
 
 
-  // ANNOTATION SYSTEM
+  // --------------------------------------------------
+  // ANNOTATIONS
+  // --------------------------------------------------
 
   const annotationTools = initializeAnnotations({
     readingContent: elements.readingContent,
@@ -127,7 +194,9 @@ export function initializeApp() {
   });
 
 
-  // WORD COUNT
+  // --------------------------------------------------
+  // GENERAL HELPERS
+  // --------------------------------------------------
 
   function getWordCount(text) {
 
@@ -161,7 +230,169 @@ export function initializeApp() {
   }
 
 
+  function setUploadStatus(message) {
+
+    setText(elements.uploadFileStatus, message);
+
+  }
+
+
+  function setGenerationStatus(message) {
+
+    setText(elements.flashcardGenerationStatus, message);
+
+  }
+
+
+  // --------------------------------------------------
+  // PAGE NAVIGATION
+  // --------------------------------------------------
+
+  function updateNavigationButtons() {
+
+    const buttons = [
+      elements.sidebarReadingButton,
+      elements.sidebarAnnotationsButton,
+      elements.revisionNavButton
+    ];
+
+    buttons.forEach(button => {
+
+      const isActive = button.dataset.page === activePage;
+
+      button.classList.toggle("active", isActive);
+
+      if (isActive) {
+        button.setAttribute("aria-current", "page");
+      } else {
+        button.removeAttribute("aria-current");
+      }
+
+    });
+
+  }
+
+
+  function navigateTo(page) {
+
+    activePage = page;
+
+    elements.readingPage.classList.toggle(
+      "hidden",
+      page !== "reading"
+    );
+
+    elements.revisionPage.classList.toggle(
+      "hidden",
+      page !== "revision"
+    );
+
+    elements.notesPage.classList.toggle(
+      "hidden",
+      page !== "notes"
+    );
+
+    const pageNames = {
+      reading: currentDocument?.title || "My reading",
+      revision: "Revision",
+      notes: "My notes"
+    };
+
+    setText(
+      elements.breadcrumbCurrent,
+      pageNames[page] || "Workspace"
+    );
+
+    updateNavigationButtons();
+
+    closeMobileMenu();
+
+    if (page === "revision") {
+      refreshRevisionDashboard();
+    }
+
+    if (page === "notes") {
+      renderNotesPage();
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  // --------------------------------------------------
+  // REVISION DASHBOARD
+  // --------------------------------------------------
+
+  function refreshRevisionDashboard() {
+
+    if (!revisionDashboard) {
+
+      revisionDashboard = mountFlashcards(
+        elements.revisionDashboardContainer
+      );
+
+    } else {
+
+      revisionDashboard.refresh();
+
+    }
+
+    updateRevisionCount();
+
+  }
+
+
+  function updateRevisionCount() {
+
+    const stats = getRevisionStatistics();
+
+    setText(
+      elements.revisionNavCount,
+      String(stats.dueCards)
+    );
+
+  }
+
+
+  // --------------------------------------------------
+  // NOTES PAGE
+  // --------------------------------------------------
+
+  function renderNotesPage() {
+
+    elements.notesPageContent.replaceChildren();
+
+    const message = createElement("p", {
+      text: currentDocument
+        ? "Open My annotations while reading to view and manage the annotations for your current document."
+        : "Open a reading document and start saving useful notes and highlights."
+    });
+
+    elements.notesPageContent.append(message);
+
+    const openButton = createElement("button", {
+      className: "button button-primary",
+      text: "Go to reading"
+    });
+
+    openButton.type = "button";
+
+    openButton.addEventListener("click", () => {
+      navigateTo("reading");
+    });
+
+    elements.notesPageContent.append(openButton);
+
+  }
+
+
+  // --------------------------------------------------
   // SPEECH
+  // --------------------------------------------------
 
   function setSpeechStatus(message) {
 
@@ -229,7 +460,9 @@ export function initializeApp() {
   }
 
 
+  // --------------------------------------------------
   // READING CONTENT
+  // --------------------------------------------------
 
   function renderReadingContent(content) {
 
@@ -253,7 +486,9 @@ export function initializeApp() {
   }
 
 
+  // --------------------------------------------------
   // OPEN READER
+  // --------------------------------------------------
 
   async function openReader(title, content) {
 
@@ -297,20 +532,20 @@ export function initializeApp() {
 
     document.title = `${cleanTitle} — ReadEase`;
 
+    setGenerationStatus("");
+
     applySettings();
 
-    // Load saved annotations for this document.
     await annotationTools.open();
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
+    navigateTo("reading");
 
   }
 
 
-  // RETURN TO EDITOR
+  // --------------------------------------------------
+  // RETURN TO IMPORT
+  // --------------------------------------------------
 
   function returnToEditor() {
 
@@ -334,12 +569,430 @@ export function initializeApp() {
 
     document.title = "ReadEase — Read. Understand. Remember.";
 
+    navigateTo("reading");
+
     elements.documentTitle.focus();
 
   }
 
 
+  // --------------------------------------------------
+  // PDF.JS LOADER
+  // --------------------------------------------------
+
+  async function loadPdfJs() {
+
+    if (!pdfJsPromise) {
+
+      pdfJsPromise = import(PDFJS_MODULE_URL)
+        .then(pdfjs => {
+
+          pdfjs.GlobalWorkerOptions.workerSrc =
+            PDFJS_WORKER_URL;
+
+          return pdfjs;
+
+        })
+        .catch(error => {
+
+          pdfJsPromise = null;
+
+          throw new Error(
+            "The PDF reader could not load. Check your internet connection and try again."
+          );
+
+        });
+
+    }
+
+    return pdfJsPromise;
+
+  }
+
+
+  // --------------------------------------------------
+  // PDF TEXT EXTRACTION
+  // --------------------------------------------------
+
+  function extractPageText(textContent) {
+
+    const items = textContent.items.filter(item =>
+      typeof item.str === "string" &&
+      item.str.trim().length > 0
+    );
+
+    if (!items.length) return "";
+
+    const lines = [];
+
+    let currentLine = "";
+
+    let previousY = null;
+
+    let previousEndX = null;
+
+    function finishLine() {
+
+      const cleaned = currentLine.trim();
+
+      if (cleaned) {
+        lines.push(cleaned);
+      }
+
+      currentLine = "";
+
+      previousEndX = null;
+
+    }
+
+
+    for (const item of items) {
+
+      const text = item.str;
+
+      const x = item.transform?.[4];
+
+      const y = item.transform?.[5];
+
+      if (
+        previousY !== null &&
+        typeof y === "number" &&
+        Math.abs(y - previousY) > 3
+      ) {
+
+        const verticalGap = Math.abs(y - previousY);
+
+        finishLine();
+
+        // Larger vertical gaps usually indicate
+        // separate paragraphs or sections.
+
+        if (verticalGap > 16) {
+          lines.push("");
+        }
+
+      }
+
+
+      if (
+        currentLine &&
+        typeof x === "number" &&
+        previousEndX !== null &&
+        x - previousEndX > 2
+      ) {
+
+        currentLine += " ";
+
+      }
+
+
+      currentLine += text;
+
+      if (
+        typeof x === "number" &&
+        typeof item.width === "number"
+      ) {
+
+        previousEndX = x + item.width;
+
+      }
+
+      if (typeof y === "number") {
+        previousY = y;
+      }
+
+      if (item.hasEOL) {
+        finishLine();
+      }
+
+    }
+
+    finishLine();
+
+    return lines.join("\n").trim();
+
+  }
+
+
+  async function extractPdfText(file) {
+
+    setUploadStatus("Preparing PDF reader...");
+
+    const pdfjs = await loadPdfJs();
+
+    const buffer = await file.arrayBuffer();
+
+    let loadingTask = null;
+
+    let pdf = null;
+
+    try {
+
+      loadingTask = pdfjs.getDocument({
+        data: new Uint8Array(buffer)
+      });
+
+      pdf = await loadingTask.promise;
+
+      let extractedPages = [];
+
+      for (
+        let pageNumber = 1;
+        pageNumber <= pdf.numPages;
+        pageNumber++
+      ) {
+
+        setUploadStatus(
+          `Extracting PDF text: page ${pageNumber} of ${pdf.numPages}...`
+        );
+
+        const page = await pdf.getPage(pageNumber);
+
+        const textContent = await page.getTextContent();
+
+        const pageText = extractPageText(textContent);
+
+        if (pageText) {
+          extractedPages.push(pageText);
+        }
+
+      }
+
+      return extractedPages.join("\n\n").trim();
+
+    } catch (error) {
+
+      if (error?.name === "PasswordException") {
+
+        throw new Error(
+          "This PDF is password-protected. Please upload an unlocked copy."
+        );
+
+      }
+
+      if (
+        error?.name === "InvalidPDFException" ||
+        error?.name === "MissingPDFException"
+      ) {
+
+        throw new Error(
+          "This PDF appears to be damaged or invalid. Please try another file."
+        );
+
+      }
+
+      throw error;
+
+    } finally {
+
+      if (pdf) {
+
+        try {
+          await pdf.destroy();
+        } catch (error) {
+          console.warn("Could not close PDF document:", error);
+        }
+
+      } else if (loadingTask) {
+
+        try {
+          await loadingTask.destroy();
+        } catch (error) {
+          console.warn("Could not close PDF loading task:", error);
+        }
+
+      }
+
+    }
+
+  }
+
+
+  // --------------------------------------------------
+  // FILE VALIDATION
+  // --------------------------------------------------
+
+  function validateFile(file) {
+
+    if (!file) {
+      throw new Error("Please choose a file.");
+    }
+
+    if (file.size === 0) {
+      throw new Error("This file is empty.");
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+
+      throw new Error(
+        "This file is too large. The maximum size is 15 MB."
+      );
+
+    }
+
+    const extension = file.name
+      .split(".")
+      .pop()
+      .toLowerCase();
+
+    if (!["txt", "pdf"].includes(extension)) {
+
+      throw new Error(
+        "Unsupported file type. Please upload a TXT or PDF file."
+      );
+
+    }
+
+    return extension;
+
+  }
+
+
+  // --------------------------------------------------
+  // FILE IMPORT
+  // --------------------------------------------------
+
+  async function processFile(file) {
+
+    if (!file) return;
+
+    elements.startReadingButton.disabled = true;
+
+    showMessage("");
+
+    try {
+
+      const extension = validateFile(file);
+
+      setUploadStatus(`Reading ${file.name}...`);
+
+      let content = "";
+
+      if (extension === "txt") {
+
+        content = await file.text();
+
+        // Remove a possible UTF-8 byte-order mark.
+
+        content = content.replace(/^\uFEFF/, "");
+
+      }
+
+      if (extension === "pdf") {
+
+        content = await extractPdfText(file);
+
+      }
+
+
+      if (!content.trim()) {
+
+        if (extension === "pdf") {
+
+          throw new Error(
+            "No selectable text was found in this PDF. It may be a scanned document containing images. OCR support is not included yet."
+          );
+
+        }
+
+        throw new Error(
+          "No readable text was found in this file."
+        );
+
+      }
+
+
+      // Only update the editor after successful extraction.
+      // This protects existing text if an upload fails.
+
+      const cleanTitle = file.name.replace(/\.[^.]+$/, "");
+
+      elements.documentTitle.value = cleanTitle;
+
+      elements.documentContent.value = content.trim();
+
+      updateWordCount();
+
+      setUploadStatus(
+        `Ready: ${file.name}`
+      );
+
+      showMessage("");
+
+    } catch (error) {
+
+      console.error("File import failed:", error);
+
+      showMessage(
+        error.message ||
+        "We couldn't read that file. Please try another one."
+      );
+
+      setUploadStatus("File import failed.");
+
+    } finally {
+
+      elements.startReadingButton.disabled = false;
+
+      // Allow the same file to be selected again.
+
+      elements.fileInput.value = "";
+
+    }
+
+  }
+
+
+  // --------------------------------------------------
+  // DRAG AND DROP
+  // --------------------------------------------------
+
+  function initializeDropzone() {
+
+    const dropzone = elements.uploadDropzone;
+
+    ["dragenter", "dragover"].forEach(eventName => {
+
+      dropzone.addEventListener(eventName, event => {
+
+        event.preventDefault();
+
+        dropzone.classList.add("is-dragging");
+
+      });
+
+    });
+
+
+    ["dragleave", "drop"].forEach(eventName => {
+
+      dropzone.addEventListener(eventName, event => {
+
+        event.preventDefault();
+
+        dropzone.classList.remove("is-dragging");
+
+      });
+
+    });
+
+
+    dropzone.addEventListener("drop", event => {
+
+      const file = event.dataTransfer?.files?.[0];
+
+      if (file) {
+        processFile(file);
+      }
+
+    });
+
+  }
+
+
+  // --------------------------------------------------
   // ACCESSIBILITY SETTINGS
+  // --------------------------------------------------
 
   function applySettings() {
 
@@ -406,7 +1059,9 @@ export function initializeApp() {
   }
 
 
+  // --------------------------------------------------
   // ACCESSIBILITY PANEL
+  // --------------------------------------------------
 
   function openAccessibilityPanel() {
 
@@ -446,7 +1101,9 @@ export function initializeApp() {
   }
 
 
+  // --------------------------------------------------
   // FOCUS MODE
+  // --------------------------------------------------
 
   function toggleFocusMode() {
 
@@ -465,21 +1122,102 @@ export function initializeApp() {
     const label = elements.focusModeButton.querySelector("span");
 
     if (label) {
+
       setText(
         label,
         focusMode ? "Exit focus mode" : "Focus mode"
       );
+
     }
 
     if (focusMode) {
+
       closeAccessibilityPanel();
+
       annotationTools.closePanel();
+
     }
 
   }
 
 
+  // --------------------------------------------------
+  // FLASHCARD GENERATION
+  // --------------------------------------------------
+
+  function createFlashcardsFromDocument() {
+
+    if (!currentDocument) return;
+
+    setGenerationStatus(
+      "Finding useful learning concepts..."
+    );
+
+    elements.generateFlashcardsButton.disabled = true;
+
+    try {
+
+      const sentences = segmentText(
+        currentDocument.content
+      );
+
+      const terms = extractTerms(
+        currentDocument.content
+      );
+
+      const scoredSentences = scoreSentences(
+        sentences,
+        terms
+      );
+
+      const generatedCards = generateFlashcards(
+        scoredSentences,
+        terms
+      );
+
+      if (!generatedCards.length) {
+
+        setGenerationStatus(
+          "We couldn't create suitable flashcards from this material. Try a longer lesson with more complete sentences."
+        );
+
+        return;
+
+      }
+
+      const savedCards = addFlashcards(
+        generatedCards.map(card => ({
+          ...card,
+          documentTitle: currentDocument.title
+        }))
+      );
+
+      updateRevisionCount();
+
+      setGenerationStatus(
+        `${savedCards.length} flashcards added to your revision collection.`
+      );
+
+    } catch (error) {
+
+      console.error("Flashcard generation failed:", error);
+
+      setGenerationStatus(
+        "Something went wrong while creating flashcards. Please try again."
+      );
+
+    } finally {
+
+      elements.generateFlashcardsButton.disabled = false;
+
+    }
+
+  }
+
+
+  // --------------------------------------------------
   // MOBILE NAVIGATION
+  // --------------------------------------------------
 
   function closeMobileMenu() {
 
@@ -513,7 +1251,9 @@ export function initializeApp() {
   }
 
 
+  // --------------------------------------------------
   // READING RULER
+  // --------------------------------------------------
 
   function updateRulerPosition(event) {
 
@@ -534,7 +1274,9 @@ export function initializeApp() {
   }
 
 
+  // --------------------------------------------------
   // RESET SETTINGS
+  // --------------------------------------------------
 
   function resetSettings() {
 
@@ -545,7 +1287,9 @@ export function initializeApp() {
   }
 
 
+  // --------------------------------------------------
   // SPEECH PLAYBACK
+  // --------------------------------------------------
 
   function startSpeech() {
 
@@ -556,7 +1300,9 @@ export function initializeApp() {
   }
 
 
+  // --------------------------------------------------
   // EVENT LISTENERS
+  // --------------------------------------------------
 
   elements.documentContent.addEventListener(
     "input",
@@ -600,49 +1346,15 @@ export function initializeApp() {
   );
 
 
-  // FILE UPLOAD
-
   elements.fileInput.addEventListener(
     "change",
-    async event => {
-
-      const file = event.target.files?.[0];
-
-      if (!file) return;
-
-      if (!file.name.toLowerCase().endsWith(".txt")) {
-
-        showMessage("Please select a .txt file.");
-
-        return;
-
-      }
-
-      try {
-
-        const content = await file.text();
-
-        elements.documentTitle.value =
-          file.name.replace(/\.txt$/i, "");
-
-        elements.documentContent.value = content;
-
-        updateWordCount();
-
-        showMessage("");
-
-      } catch {
-
-        showMessage(
-          "We couldn't read that file. Please try another one."
-        );
-
-      }
-
-      elements.fileInput.value = "";
-
+    event => {
+      processFile(event.target.files?.[0]);
     }
   );
+
+
+  initializeDropzone();
 
 
   elements.editDocumentButton.addEventListener(
@@ -748,7 +1460,7 @@ export function initializeApp() {
   );
 
 
-  // READING RULER EVENTS
+  // RULER EVENTS
 
   elements.readingContent.addEventListener(
     "pointermove",
@@ -768,7 +1480,7 @@ export function initializeApp() {
   );
 
 
-  // SPEECH EVENTS
+  // SPEECH
 
   elements.speechPlayButton.addEventListener(
     "click",
@@ -819,16 +1531,44 @@ export function initializeApp() {
       closeMobileMenu();
 
       if (currentDocument) {
+
+        navigateTo("reading");
+
         annotationTools.openPanel();
+
       } else {
-        showMessage("Open a reading document to view your annotations.");
+
+        navigateTo("notes");
+
       }
 
     }
   );
 
 
-  // MOBILE NAVIGATION
+  // REVISION
+
+  elements.revisionNavButton.addEventListener(
+    "click",
+    () => navigateTo("revision")
+  );
+
+
+  // READING NAVIGATION
+
+  elements.sidebarReadingButton.addEventListener(
+    "click",
+    () => navigateTo("reading")
+  );
+
+
+  elements.generateFlashcardsButton.addEventListener(
+    "click",
+    createFlashcardsFromDocument
+  );
+
+
+  // MOBILE
 
   elements.mobileMenuButton.addEventListener(
     "click",
@@ -842,7 +1582,7 @@ export function initializeApp() {
   );
 
 
-  // KEYBOARD SHORTCUTS
+  // KEYBOARD
 
   document.addEventListener(
     "keydown",
@@ -874,10 +1614,16 @@ export function initializeApp() {
   );
 
 
+  // --------------------------------------------------
   // INITIALIZE
+  // --------------------------------------------------
 
   updateWordCount();
 
   applySettings();
+
+  updateRevisionCount();
+
+  navigateTo("reading");
 
 }
