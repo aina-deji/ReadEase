@@ -82,8 +82,11 @@ const PDFJS_MODULE_URL =
 const PDFJS_WORKER_URL =
   `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.mjs`;
 
-let pdfJsPromise = null;
+const MAMMOTH_SCRIPT_URL =
+  "https://cdn.jsdelivr.net/npm/mammoth@1.9.0/mammoth.browser.min.js";
 
+let pdfJsPromise = null;
+let mammothPromise = null;
 
 // --------------------------------------------------
 // APPLICATION
@@ -608,6 +611,94 @@ export function initializeApp() {
     return pdfJsPromise;
 
   }
+  
+  // --------------------------------------------------
+// MAMMOTH.JS LOADER
+// --------------------------------------------------
+
+async function loadMammoth() {
+  
+  if (window.mammoth) {
+    return window.mammoth;
+  }
+  
+  if (!mammothPromise) {
+    
+    mammothPromise = new Promise((resolve, reject) => {
+      
+      const script = document.createElement("script");
+      
+      script.src = MAMMOTH_SCRIPT_URL;
+      script.async = true;
+      
+      script.onload = () => {
+        
+        if (window.mammoth) {
+          resolve(window.mammoth);
+        } else {
+          reject(
+            new Error("The Word document reader could not initialize.")
+          );
+        }
+        
+      };
+      
+      script.onerror = () => {
+        reject(
+          new Error("The Word document reader could not load. Check your internet connection.")
+        );
+      };
+      
+      document.head.appendChild(script);
+      
+    }).catch(error => {
+      
+      mammothPromise = null;
+      
+      throw error;
+      
+    });
+    
+  }
+  
+  return mammothPromise;
+  
+}
+
+
+// --------------------------------------------------
+// DOCX TEXT EXTRACTION
+// --------------------------------------------------
+
+async function extractDocxText(file) {
+  
+  setUploadStatus("Preparing Word document reader...");
+  
+  const mammoth = await loadMammoth();
+  
+  setUploadStatus("Extracting Word document text...");
+  
+  try {
+    
+    const arrayBuffer = await file.arrayBuffer();
+    
+    const result = await mammoth.extractRawText({
+      arrayBuffer
+    });
+    
+    return result.value || "";
+    
+  } catch (error) {
+    
+    console.error("DOCX extraction failed:", error);
+    
+    throw new Error(
+      "We couldn't read this Word document. It may be damaged, encrypted or unsupported."
+    );
+    
+  }
+  
+}
 
 
   // --------------------------------------------------
@@ -812,40 +903,28 @@ export function initializeApp() {
   // FILE VALIDATION
   // --------------------------------------------------
 
-  function validateFile(file) {
-
-    if (!file) {
-      throw new Error("Please choose a file.");
-    }
-
-    if (file.size === 0) {
-      throw new Error("This file is empty.");
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-
-      throw new Error(
-        "This file is too large. The maximum size is 15 MB."
-      );
-
-    }
-
-    const extension = file.name
-      .split(".")
-      .pop()
-      .toLowerCase();
-
-    if (!["txt", "pdf"].includes(extension)) {
-
-      throw new Error(
-        "Unsupported file type. Please upload a TXT or PDF file."
-      );
-
-    }
-
-    return extension;
-
+function validateFile(file) {
+  if (!file) {
+    throw new Error("Please select a file to upload.");
   }
+  
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error("File is too large. Maximum file size is 15 MB.");
+  }
+  
+  const fileName = file.name.toLowerCase();
+  const extension = fileName.split(".").pop();
+  
+  const supportedExtensions = ["txt", "pdf", "docx"];
+  
+  if (!supportedExtensions.includes(extension)) {
+    throw new Error(
+      "Unsupported file type. Please upload a TXT, PDF or DOCX file."
+    );
+  }
+  
+  return extension;
+}
 
 
   // --------------------------------------------------
@@ -883,6 +962,11 @@ export function initializeApp() {
         content = await extractPdfText(file);
 
       }
+      if (extension === "docx") {
+
+  content = await extractDocxText(file);
+
+}
 
 
       if (!content.trim()) {
