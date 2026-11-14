@@ -527,24 +527,57 @@
 
             <!-- SPEECH -->
 
-            <section class="speech-player" aria-label="Read aloud controls">
+<!-- SPEECH -->
 
-              <div class="speech-info">
-                <div>
-                  <strong>Listen to your reading</strong>
-                  <span id="speechStatus" aria-live="polite">Ready when you are</span>
-                </div>
-              </div>
+<section class="speech-player" aria-label="Read aloud">
 
-              <div class="speech-controls">
-                <button class="button button-primary speech-action" id="speechPlayButton" type="button">Play</button>
-                <button class="button button-secondary speech-action" id="speechPauseButton" type="button" disabled>Pause</button>
-                <button class="button button-secondary speech-action" id="speechStopButton" type="button" disabled>Stop</button>
-              </div>
+  <div class="speech-info">
+    <div>
+      <strong>Listen to your reading</strong>
+      <span id="speechStatus" aria-live="polite">
+        Ready when you are
+      </span>
+    </div>
+  </div>
 
-            </section>
+  <div class="speech-controls">
+    <button
+      class="button button-primary speech-toggle-button"
+      id="speechPlayButton"
+      type="button"
+      aria-label="Play aloud"
+      title="Play aloud"
+      aria-pressed="false"
+    >
+      <svg
+        class="speech-play-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M7 4.5L19 12L7 19.5V4.5Z"
+          fill="currentColor"
+        />
+      </svg>
 
+      <svg
+        class="speech-pause-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M8 5V19M16 5V19"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
+  </div>
 
+</section>
             <!-- READING CARD -->
 
             <article class="reading-card" id="readingCard">

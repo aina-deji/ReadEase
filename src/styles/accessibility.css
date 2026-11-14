@@ -619,3 +619,63 @@
     transition: none;
   }
 }
+
+/* Compact read-aloud control */
+
+.speech-player {
+  align-items: center;
+  flex-direction: row;
+  gap: 14px;
+}
+
+.speech-controls {
+  flex-shrink: 0;
+}
+
+.speech-toggle-button {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+}
+
+.speech-toggle-button svg {
+  width: 21px;
+  height: 21px;
+}
+
+.speech-pause-icon {
+  display: none;
+}
+
+.speech-toggle-button.is-playing .speech-play-icon {
+  display: none;
+}
+
+.speech-toggle-button.is-playing .speech-pause-icon {
+  display: block;
+}
+
+@media (max-width: 600px) {
+
+  .speech-player {
+    padding: 12px 14px;
+  }
+
+  .speech-info {
+    flex: 1;
+  }
+
+  .speech-toggle-button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+
+}

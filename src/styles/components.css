@@ -1,8 +1,6 @@
 .eyebrow {
   margin: 0;
-
   color: var(--color-primary);
-
   font-size: var(--font-size-xs);
   font-weight: 700;
   letter-spacing: 1.4px;
@@ -10,7 +8,6 @@
 
 .step-indicator {
   color: var(--color-text-muted);
-
   font-size: var(--font-size-xs);
   font-weight: 700;
   letter-spacing: 0.8px;
@@ -20,19 +17,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-
   width: 100%;
   padding: 12px;
-
   color: var(--color-text-secondary);
-
   background: transparent;
-
   border: 0;
   border-radius: var(--radius-md);
-
   text-align: left;
-
   transition:
     background var(--transition-fast),
     color var(--transition-fast);
@@ -50,7 +41,6 @@
 .nav-item.active {
   color: var(--color-primary-dark);
   background: var(--color-primary-soft);
-
   font-weight: 600;
 }
 
@@ -60,9 +50,7 @@
 
 .coming-soon {
   margin-left: auto;
-
   color: var(--color-text-muted);
-
   font-size: 10px;
 }
 
@@ -79,18 +67,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-
   color: var(--color-text-secondary);
-
   font-size: var(--font-size-xs);
 }
 
 .status-dot {
   width: 8px;
   height: 8px;
-
   background: var(--color-success);
-
   border-radius: 50%;
 }
 
@@ -100,9 +84,7 @@
 
 .input-group label {
   display: block;
-
   margin-bottom: 10px;
-
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
@@ -110,16 +92,11 @@
 .input-group input,
 .input-group textarea {
   width: 100%;
-
   padding: 14px 15px;
-
   color: var(--color-text);
-
   background: var(--color-surface);
-
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
-
   transition: border-color var(--transition-fast);
 }
 
@@ -136,9 +113,7 @@
 
 .input-group textarea {
   min-height: 190px;
-
   resize: vertical;
-
   line-height: 1.7;
 }
 
@@ -161,7 +136,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 14px;
 }
 
@@ -170,16 +144,12 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-
   min-height: 44px;
   padding: 10px 17px;
-
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-
   font-size: var(--font-size-sm);
   font-weight: 600;
-
   transition:
     background var(--transition-fast),
     border-color var(--transition-fast),
@@ -221,15 +191,12 @@
 .form-message {
   min-height: 20px;
   margin: 12px 0 0;
-
   color: var(--color-danger);
-
   font-size: var(--font-size-sm);
 }
 
 .sample-heading span {
   color: var(--color-text-muted);
-
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -239,17 +206,12 @@
   display: flex;
   align-items: center;
   gap: 15px;
-
   width: 100%;
   padding: 17px;
-
   text-align: left;
-
   background: var(--color-surface);
-
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
@@ -263,15 +225,11 @@
 .sample-icon {
   display: grid;
   place-items: center;
-
   flex-shrink: 0;
-
   width: 43px;
   height: 43px;
-
   color: var(--color-primary);
   background: var(--color-primary-soft);
-
   border-radius: var(--radius-md);
 }
 
@@ -279,7 +237,6 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-
   min-width: 0;
 }
 
@@ -289,7 +246,6 @@
 
 .sample-copy span {
   color: var(--color-text-secondary);
-
   font-size: var(--font-size-xs);
   line-height: 1.5;
 }
@@ -303,17 +259,12 @@
 .icon-button {
   display: grid;
   place-items: center;
-
   width: 42px;
   height: 42px;
-
   color: var(--color-text-secondary);
-
   background: var(--color-surface);
-
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-
   transition:
     background var(--transition-fast),
     color var(--transition-fast);
@@ -337,9 +288,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   color: var(--color-text-muted);
-
   font-size: var(--font-size-xs);
 }
 
@@ -561,7 +510,7 @@
 
 .revision-delete-button {
   padding: 8px 12px;
-  border: 1px solid var(--color-border, #e1e8e3);
+  border: 1px solid var(--color-border, #e1e8df);
   border-radius: 8px;
   background: transparent;
   color: #a33e3e;
@@ -707,6 +656,159 @@
   outline-offset: 3px;
 }
 
+/* =========================================
+   FLASHCARD COLLECTION GROUPS
+========================================= */
+
+.revision-group-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 250px), 1fr)
+  );
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.revision-group-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--color-border, #e1e8e3);
+  border-radius: 16px;
+  background: var(--color-surface, #fff);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.revision-group-card:hover {
+  border-color: var(--color-primary, #6257d9);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+
+.revision-group-card__title {
+  margin: 0;
+  color: var(--color-text, #202238);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.revision-group-card__type {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--color-primary-soft, #eeecff);
+  color: var(--color-primary-dark, #5045c5);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.revision-group-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.revision-group-card__count,
+.revision-group-card__due,
+.revision-group-card__mastered {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  color: var(--color-text-muted, #69736e);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.revision-group-card__count strong,
+.revision-group-card__due strong,
+.revision-group-card__mastered strong {
+  color: var(--color-text, #202238);
+  font-size: 1.15rem;
+  font-weight: 750;
+}
+
+.revision-group-card__due strong {
+  color: var(--color-primary, #6257d9);
+}
+
+.revision-group-card__mastered strong {
+  color: var(--color-success, #27845c);
+}
+
+.revision-group-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: auto;
+}
+
+.revision-group-open-button,
+.revision-group-review-button,
+.revision-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid var(--color-border-strong, #dce0eb);
+  border-radius: var(--radius-md, 10px);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.revision-group-open-button {
+  flex: 1;
+  color: var(--color-text, #202238);
+  background: var(--color-surface, #fff);
+}
+
+.revision-group-open-button:hover,
+.revision-back-button:hover {
+  border-color: var(--color-primary, #6257d9);
+  color: var(--color-primary-dark, #5045c5);
+  background: var(--color-primary-soft, #eeecff);
+}
+
+.revision-group-review-button {
+  flex: 1;
+  color: #fff;
+  background: var(--color-primary, #6257d9);
+  border-color: var(--color-primary, #6257d9);
+}
+
+.revision-group-review-button:hover {
+  background: var(--color-primary-dark, #5045c5);
+  border-color: var(--color-primary-dark, #5045c5);
+}
+
+.revision-back-button {
+  margin-bottom: 18px;
+  color: var(--color-text, #202238);
+  background: var(--color-surface, #fff);
+}
+
+/* =========================================
+   RESPONSIVE REVISION DASHBOARD
+========================================= */
+
 @media (max-width: 760px) {
   .revision-dashboard__inner {
     padding: 20px;
@@ -743,10 +845,44 @@
   .revision-complete {
     padding: 22px;
   }
+
+  .revision-group-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .revision-group-card {
+    padding: 16px;
+  }
+
+  .revision-group-card__stats {
+    margin: 15px 0;
+  }
+
+  .revision-group-card__actions {
+    flex-direction: column;
+  }
+
+  .revision-group-open-button,
+  .revision-group-review-button {
+    width: 100%;
+  }
 }
 
+/* =========================================
+   REDUCED MOTION
+========================================= */
+
 @media (prefers-reduced-motion: reduce) {
-  .revision-progress__bar {
+  .revision-progress__bar,
+  .revision-group-card,
+  .revision-group-open-button,
+  .revision-group-review-button,
+  .revision-back-button {
     transition: none;
+  }
+
+  .revision-group-card:hover {
+    transform: none;
   }
 }

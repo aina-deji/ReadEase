@@ -519,6 +519,73 @@ export function createRevisionSession(
 }
 
 /**
+ * Create a practice session using every card in a collection.
+ *
+ * Unlike revision sessions, practice sessions:
+ * - Include cards regardless of their due dates.
+ * - Preserve existing spaced-repetition schedules.
+ * - Do not record ratings or alter mastery progress.
+ *
+ * Usage:
+ * createPracticeSession(["card-id-1", "card-id-2"])
+ */
+export function createPracticeSession(
+  cardIds,
+  now = new Date()
+) {
+  if (!Array.isArray(cardIds)) {
+    throw new TypeError(
+      "Practice sessions require an array of card IDs."
+    );
+  }
+  
+  const date = normalizeDate(now);
+  const database = getDatabase();
+  
+  const requestedIds = [...new Set(cardIds)];
+  
+  const cardMap = new Map(
+    database.cards.map(card => [card.id, card])
+  );
+  
+  // Preserve the order supplied by the collection.
+  const cards = requestedIds
+    .map(id => cardMap.get(id))
+    .filter(Boolean);
+  
+  if (!cards.length) {
+    return null;
+  }
+  
+  const session = {
+    id: createId(),
+    
+    mode: "practice",
+    
+    startedAt: date.toISOString(),
+    
+    completedAt: null,
+    
+    cardIds: cards.map(card => card.id),
+    
+    reviewedCardIds: [],
+    
+    documentId: null,
+    
+    topic: null
+  };
+  
+  database.sessions.push(session);
+  
+  saveDatabase(database);
+  
+  return {
+    ...session,
+    cards
+  };
+}
+
+/**
  * Retrieve a saved revision session.
  */
 export function getRevisionSession(sessionId) {

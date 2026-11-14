@@ -88,6 +88,7 @@ const MAMMOTH_SCRIPT_URL =
 let pdfJsPromise = null;
 let mammothPromise = null;
 
+
 // --------------------------------------------------
 // APPLICATION
 // --------------------------------------------------
@@ -149,8 +150,6 @@ export function initializeApp() {
     readingRuler: getElement("#readingRuler"),
 
     speechPlayButton: getElement("#speechPlayButton"),
-    speechPauseButton: getElement("#speechPauseButton"),
-    speechStopButton: getElement("#speechStopButton"),
     speechStatus: getElement("#speechStatus"),
 
     annotationsButton: getElement("#annotationsButton"),
@@ -174,6 +173,10 @@ export function initializeApp() {
   };
 
 
+  // --------------------------------------------------
+  // APPLICATION STATE
+  // --------------------------------------------------
+
   let settings = { ...DEFAULT_SETTINGS };
 
   let focusMode = false;
@@ -181,6 +184,10 @@ export function initializeApp() {
   let currentDocument = null;
 
   let activePage = "reading";
+
+  // The current document view is either:
+  // "editor" or "reader".
+  let currentView = "editor";
 
   let revisionDashboard = null;
 
@@ -248,80 +255,37 @@ export function initializeApp() {
 
 
   // --------------------------------------------------
-  // PAGE NAVIGATION
+  // MOBILE NAVIGATION
   // --------------------------------------------------
 
-  function updateNavigationButtons() {
+  function closeMobileMenu() {
 
-    const buttons = [
-      elements.sidebarReadingButton,
-      elements.sidebarAnnotationsButton,
-      elements.revisionNavButton
-    ];
+    elements.sidebar.classList.remove("open");
 
-    buttons.forEach(button => {
+    elements.mobileOverlay.classList.remove("visible");
 
-      const isActive = button.dataset.page === activePage;
-
-      button.classList.toggle("active", isActive);
-
-      if (isActive) {
-        button.setAttribute("aria-current", "page");
-      } else {
-        button.removeAttribute("aria-current");
-      }
-
-    });
+    elements.mobileMenuButton.setAttribute(
+      "aria-expanded",
+      "false"
+    );
 
   }
 
 
-  function navigateTo(page) {
+  function toggleMobileMenu() {
 
-    activePage = page;
+    const isOpen =
+      elements.sidebar.classList.toggle("open");
 
-    elements.readingPage.classList.toggle(
-      "hidden",
-      page !== "reading"
+    elements.mobileOverlay.classList.toggle(
+      "visible",
+      isOpen
     );
 
-    elements.revisionPage.classList.toggle(
-      "hidden",
-      page !== "revision"
+    elements.mobileMenuButton.setAttribute(
+      "aria-expanded",
+      String(isOpen)
     );
-
-    elements.notesPage.classList.toggle(
-      "hidden",
-      page !== "notes"
-    );
-
-    const pageNames = {
-      reading: currentDocument?.title || "My reading",
-      revision: "Revision",
-      notes: "My notes"
-    };
-
-    setText(
-      elements.breadcrumbCurrent,
-      pageNames[page] || "Workspace"
-    );
-
-    updateNavigationButtons();
-
-    closeMobileMenu();
-
-    if (page === "revision") {
-      refreshRevisionDashboard();
-    }
-
-    if (page === "notes") {
-      renderNotesPage();
-    }
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
 
   }
 
@@ -394,6 +358,161 @@ export function initializeApp() {
 
 
   // --------------------------------------------------
+  // PAGE NAVIGATION AND BROWSER HISTORY
+  // --------------------------------------------------
+
+  function updateNavigationButtons() {
+
+    const buttons = [
+      elements.sidebarReadingButton,
+      elements.sidebarAnnotationsButton,
+      elements.revisionNavButton
+    ];
+
+    buttons.forEach(button => {
+
+      const isActive = button.dataset.page === activePage;
+
+      button.classList.toggle("active", isActive);
+
+      if (isActive) {
+        button.setAttribute("aria-current", "page");
+      } else {
+        button.removeAttribute("aria-current");
+      }
+
+    });
+
+  }
+
+
+  function updateDocumentView() {
+
+    const showingReader =
+      currentView === "reader" && Boolean(currentDocument);
+
+    elements.readerSection.classList.toggle(
+      "hidden",
+      !showingReader
+    );
+
+    elements.importSection.classList.toggle(
+      "hidden",
+      showingReader
+    );
+
+    elements.pageHeading.classList.toggle(
+      "hidden",
+      showingReader
+    );
+
+    document.title = showingReader
+      ? `${currentDocument.title} — ReadEase`
+      : "ReadEase — Read. Understand. Remember.";
+
+  }
+
+
+  function navigateTo(page, options = {}) {
+
+    const { history: updateHistory = true } = options;
+
+    const validPages = [
+      "reading",
+      "revision",
+      "notes"
+    ];
+
+    if (!validPages.includes(page)) {
+      return;
+    }
+
+    activePage = page;
+
+    updateDocumentView();
+
+    // Add a browser-history entry for normal navigation.
+    // Do not add another entry when restoring Back/Forward.
+    if (updateHistory) {
+
+      window.history.pushState(
+        {
+          app: "readease",
+          page,
+          view: currentView
+        },
+        "",
+        window.location.href
+      );
+
+    }
+
+    elements.readingPage.classList.toggle(
+      "hidden",
+      page !== "reading"
+    );
+
+    elements.revisionPage.classList.toggle(
+      "hidden",
+      page !== "revision"
+    );
+
+    elements.notesPage.classList.toggle(
+      "hidden",
+      page !== "notes"
+    );
+
+    const pageNames = {
+      reading: currentDocument?.title || "My reading",
+      revision: "Revision",
+      notes: "My notes"
+    };
+
+    setText(
+      elements.breadcrumbCurrent,
+      pageNames[page] || "Workspace"
+    );
+
+    updateNavigationButtons();
+
+    closeMobileMenu();
+
+    if (page === "revision") {
+      refreshRevisionDashboard();
+    }
+
+    if (page === "notes") {
+      renderNotesPage();
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  function restoreHistoryRoute(state) {
+
+    if (
+      !state ||
+      state.app !== "readease"
+    ) {
+      return;
+    }
+
+    currentView =
+      state.view === "reader" ? "reader" : "editor";
+
+    navigateTo(state.page, {
+      history: false
+    });
+
+  }
+
+
+  // --------------------------------------------------
   // SPEECH
   // --------------------------------------------------
 
@@ -409,34 +528,53 @@ export function initializeApp() {
     const playing = state === "playing";
     const paused = state === "paused";
 
-    elements.speechPlayButton.disabled =
-      !speech.supported || playing;
+    const button = elements.speechPlayButton;
 
-    elements.speechPauseButton.disabled =
-      !playing;
+    button.classList.toggle("is-playing", playing);
 
-    elements.speechStopButton.disabled =
-      !playing && !paused;
+    button.setAttribute(
+      "aria-pressed",
+      String(playing)
+    );
 
-    if (state === "playing") {
+    if (playing) {
+
+      button.setAttribute("aria-label", "Pause read aloud");
+      button.title = "Pause read aloud";
+
       setSpeechStatus("Reading aloud...");
-    }
 
-    if (state === "paused") {
+    } else if (paused) {
+
+      button.setAttribute("aria-label", "Resume read aloud");
+      button.title = "Resume read aloud";
+
       setSpeechStatus("Playback paused");
-    }
 
-    if (state === "stopped") {
-      setSpeechStatus("Ready when you are");
-    }
+    } else if (state === "ended") {
 
-    if (state === "ended") {
+      button.setAttribute("aria-label", "Play again");
+      button.title = "Play again";
+
       setSpeechStatus("Finished reading");
+
+    } else if (state === "error") {
+
+      button.setAttribute("aria-label", "Try reading aloud again");
+      button.title = "Try again";
+
+      setSpeechStatus("Unable to continue playback");
+
+    } else {
+
+      button.setAttribute("aria-label", "Play aloud");
+      button.title = "Play aloud";
+
+      setSpeechStatus("Ready when you are");
+
     }
 
-    if (state === "error") {
-      setSpeechStatus("Unable to continue playback");
-    }
+    button.disabled = !speech.supported;
 
   }
 
@@ -541,13 +679,15 @@ export function initializeApp() {
 
     await annotationTools.open();
 
+    currentView = "reader";
+
     navigateTo("reading");
 
   }
 
 
   // --------------------------------------------------
-  // RETURN TO IMPORT
+  // RETURN TO EDITOR
   // --------------------------------------------------
 
   function returnToEditor() {
@@ -562,15 +702,7 @@ export function initializeApp() {
 
     closeAccessibilityPanel();
 
-    elements.readerSection.classList.add("hidden");
-
-    elements.importSection.classList.remove("hidden");
-
-    elements.pageHeading.classList.remove("hidden");
-
-    setText(elements.breadcrumbCurrent, "My reading");
-
-    document.title = "ReadEase — Read. Understand. Remember.";
+    currentView = "editor";
 
     navigateTo("reading");
 
@@ -611,94 +743,95 @@ export function initializeApp() {
     return pdfJsPromise;
 
   }
-  
+
+
   // --------------------------------------------------
-// MAMMOTH.JS LOADER
-// --------------------------------------------------
+  // MAMMOTH.JS LOADER
+  // --------------------------------------------------
 
-async function loadMammoth() {
-  
-  if (window.mammoth) {
-    return window.mammoth;
-  }
-  
-  if (!mammothPromise) {
-    
-    mammothPromise = new Promise((resolve, reject) => {
-      
-      const script = document.createElement("script");
-      
-      script.src = MAMMOTH_SCRIPT_URL;
-      script.async = true;
-      
-      script.onload = () => {
-        
-        if (window.mammoth) {
-          resolve(window.mammoth);
-        } else {
+  async function loadMammoth() {
+
+    if (window.mammoth) {
+      return window.mammoth;
+    }
+
+    if (!mammothPromise) {
+
+      mammothPromise = new Promise((resolve, reject) => {
+
+        const script = document.createElement("script");
+
+        script.src = MAMMOTH_SCRIPT_URL;
+        script.async = true;
+
+        script.onload = () => {
+
+          if (window.mammoth) {
+            resolve(window.mammoth);
+          } else {
+            reject(
+              new Error("The Word document reader could not initialize.")
+            );
+          }
+
+        };
+
+        script.onerror = () => {
           reject(
-            new Error("The Word document reader could not initialize.")
+            new Error("The Word document reader could not load. Check your internet connection.")
           );
-        }
-        
-      };
-      
-      script.onerror = () => {
-        reject(
-          new Error("The Word document reader could not load. Check your internet connection.")
-        );
-      };
-      
-      document.head.appendChild(script);
-      
-    }).catch(error => {
-      
-      mammothPromise = null;
-      
-      throw error;
-      
-    });
-    
+        };
+
+        document.head.appendChild(script);
+
+      }).catch(error => {
+
+        mammothPromise = null;
+
+        throw error;
+
+      });
+
+    }
+
+    return mammothPromise;
+
   }
-  
-  return mammothPromise;
-  
-}
 
 
-// --------------------------------------------------
-// DOCX TEXT EXTRACTION
-// --------------------------------------------------
+  // --------------------------------------------------
+  // DOCX TEXT EXTRACTION
+  // --------------------------------------------------
 
-async function extractDocxText(file) {
-  
-  setUploadStatus("Preparing Word document reader...");
-  
-  const mammoth = await loadMammoth();
-  
-  setUploadStatus("Extracting Word document text...");
-  
-  try {
-    
-    const arrayBuffer = await file.arrayBuffer();
-    
-    const result = await mammoth.extractRawText({
-      arrayBuffer
-    });
-    
-    return result.value || "";
-    
-  } catch (error) {
-    
-    console.error("DOCX extraction failed:", error);
-    
-    throw new Error(
-      "We couldn't read this Word document. It may be damaged, encrypted or unsupported."
-    );
-    
+  async function extractDocxText(file) {
+
+    setUploadStatus("Preparing Word document reader...");
+
+    const mammoth = await loadMammoth();
+
+    setUploadStatus("Extracting Word document text...");
+
+    try {
+
+      const arrayBuffer = await file.arrayBuffer();
+
+      const result = await mammoth.extractRawText({
+        arrayBuffer
+      });
+
+      return result.value || "";
+
+    } catch (error) {
+
+      console.error("DOCX extraction failed:", error);
+
+      throw new Error(
+        "We couldn't read this Word document. It may be damaged, encrypted or unsupported."
+      );
+
+    }
+
   }
-  
-}
 
 
   // --------------------------------------------------
@@ -754,9 +887,6 @@ async function extractDocxText(file) {
         const verticalGap = Math.abs(y - previousY);
 
         finishLine();
-
-        // Larger vertical gaps usually indicate
-        // separate paragraphs or sections.
 
         if (verticalGap > 16) {
           lines.push("");
@@ -825,7 +955,7 @@ async function extractDocxText(file) {
 
       pdf = await loadingTask.promise;
 
-      let extractedPages = [];
+      const extractedPages = [];
 
       for (
         let pageNumber = 1;
@@ -903,28 +1033,31 @@ async function extractDocxText(file) {
   // FILE VALIDATION
   // --------------------------------------------------
 
-function validateFile(file) {
-  if (!file) {
-    throw new Error("Please select a file to upload.");
+  function validateFile(file) {
+
+    if (!file) {
+      throw new Error("Please select a file to upload.");
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error("File is too large. Maximum file size is 15 MB.");
+    }
+
+    const fileName = file.name.toLowerCase();
+
+    const extension = fileName.split(".").pop();
+
+    const supportedExtensions = ["txt", "pdf", "docx"];
+
+    if (!supportedExtensions.includes(extension)) {
+      throw new Error(
+        "Unsupported file type. Please upload a TXT, PDF or DOCX file."
+      );
+    }
+
+    return extension;
+
   }
-  
-  if (file.size > MAX_FILE_SIZE) {
-    throw new Error("File is too large. Maximum file size is 15 MB.");
-  }
-  
-  const fileName = file.name.toLowerCase();
-  const extension = fileName.split(".").pop();
-  
-  const supportedExtensions = ["txt", "pdf", "docx"];
-  
-  if (!supportedExtensions.includes(extension)) {
-    throw new Error(
-      "Unsupported file type. Please upload a TXT, PDF or DOCX file."
-    );
-  }
-  
-  return extension;
-}
 
 
   // --------------------------------------------------
@@ -951,8 +1084,6 @@ function validateFile(file) {
 
         content = await file.text();
 
-        // Remove a possible UTF-8 byte-order mark.
-
         content = content.replace(/^\uFEFF/, "");
 
       }
@@ -962,11 +1093,12 @@ function validateFile(file) {
         content = await extractPdfText(file);
 
       }
+
       if (extension === "docx") {
 
-  content = await extractDocxText(file);
+        content = await extractDocxText(file);
 
-}
+      }
 
 
       if (!content.trim()) {
@@ -985,9 +1117,6 @@ function validateFile(file) {
 
       }
 
-
-      // Only update the editor after successful extraction.
-      // This protects existing text if an upload fails.
 
       const cleanTitle = file.name.replace(/\.[^.]+$/, "");
 
@@ -1017,8 +1146,6 @@ function validateFile(file) {
     } finally {
 
       elements.startReadingButton.disabled = false;
-
-      // Allow the same file to be selected again.
 
       elements.fileInput.value = "";
 
@@ -1229,6 +1356,31 @@ function validateFile(file) {
   // FLASHCARD GENERATION
   // --------------------------------------------------
 
+  function createDocumentId(title, content) {
+
+    const text = `${title || ""}\n${content || ""}`;
+
+    let hashA = 0x811c9dc5;
+    let hashB = 0x45d9f3b;
+
+    for (let i = 0; i < text.length; i++) {
+
+      const code = text.charCodeAt(i);
+
+      hashA = Math.imul(hashA ^ code, 0x01000193);
+      hashB = Math.imul(hashB ^ code, 0x45d9f3b);
+
+    }
+
+    const first = (hashA >>> 0).toString(16).padStart(8, "0");
+
+    const second = (hashB >>> 0).toString(16).padStart(8, "0");
+
+    return `document-${first}${second}`;
+
+  }
+
+
   function createFlashcardsFromDocument() {
 
     if (!currentDocument) return;
@@ -1269,9 +1421,15 @@ function validateFile(file) {
 
       }
 
+      const documentId = createDocumentId(
+        currentDocument.title,
+        currentDocument.content
+      );
+
       const savedCards = addFlashcards(
         generatedCards.map(card => ({
           ...card,
+          documentId,
           documentTitle: currentDocument.title
         }))
       );
@@ -1295,42 +1453,6 @@ function validateFile(file) {
       elements.generateFlashcardsButton.disabled = false;
 
     }
-
-  }
-
-
-  // --------------------------------------------------
-  // MOBILE NAVIGATION
-  // --------------------------------------------------
-
-  function closeMobileMenu() {
-
-    elements.sidebar.classList.remove("open");
-
-    elements.mobileOverlay.classList.remove("visible");
-
-    elements.mobileMenuButton.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-
-  }
-
-
-  function toggleMobileMenu() {
-
-    const isOpen =
-      elements.sidebar.classList.toggle("open");
-
-    elements.mobileOverlay.classList.toggle(
-      "visible",
-      isOpen
-    );
-
-    elements.mobileMenuButton.setAttribute(
-      "aria-expanded",
-      String(isOpen)
-    );
 
   }
 
@@ -1570,25 +1692,21 @@ function validateFile(file) {
     "click",
     () => {
 
-      if (speech.isPaused) {
+      if (speech.isPlaying && !speech.isPaused) {
+
+        speech.pause();
+
+      } else if (speech.isPaused) {
+
         speech.resume();
+
       } else {
+
         startSpeech();
+
       }
 
     }
-  );
-
-
-  elements.speechPauseButton.addEventListener(
-    "click",
-    () => speech.pause()
-  );
-
-
-  elements.speechStopButton.addEventListener(
-    "click",
-    () => speech.stop()
   );
 
 
@@ -1690,7 +1808,23 @@ function validateFile(file) {
   );
 
 
+  // --------------------------------------------------
+  // BROWSER BACK AND FORWARD
+  // --------------------------------------------------
+
+  window.addEventListener(
+    "popstate",
+    event => {
+
+      restoreHistoryRoute(event.state);
+
+    }
+  );
+
+
+  // --------------------------------------------------
   // CLEANUP
+  // --------------------------------------------------
 
   window.addEventListener(
     "beforeunload",
@@ -1708,6 +1842,20 @@ function validateFile(file) {
 
   updateRevisionCount();
 
-  navigateTo("reading");
+  currentView = "editor";
+
+  window.history.replaceState(
+    {
+      app: "readease",
+      page: "reading",
+      view: "editor"
+    },
+    "",
+    window.location.href
+  );
+
+  navigateTo("reading", {
+    history: false
+  });
 
 }

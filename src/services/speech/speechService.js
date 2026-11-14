@@ -1,12 +1,13 @@
 const MAX_CHUNK_LENGTH = 180;
+const RESUME_DELAY = 100;
 
 export class SpeechService {
-  
   constructor() {
     this.synthesis = window.speechSynthesis;
     
     this.currentIndex = 0;
     this.chunks = [];
+    
     this.isPlaying = false;
     this.isPaused = false;
     
@@ -17,6 +18,9 @@ export class SpeechService {
     this.selectedVoice = null;
     this.rate = 1;
     this.pitch = 1;
+    
+    this.playbackId = 0;
+    this.resumeTimer = null;
   }
   
   get supported() {
@@ -28,30 +32,28 @@ export class SpeechService {
   }
   
   splitText(text) {
-    
-    const sentences = text
-      .replace(/\s+/g, " ")
+    const sentences =
+      text.replace(/\s+/g, " ")
       .match(/[^.!?]+[.!?]+|[^.!?]+$/gu) || [];
     
     const chunks = [];
     let currentChunk = "";
     
     for (const sentence of sentences) {
-      
       const cleanSentence = sentence.trim();
       
       if (!cleanSentence) continue;
       
       if (
         currentChunk &&
-        (currentChunk.length + cleanSentence.length + 1 > MAX_CHUNK_LENGTH)
+        currentChunk.length + cleanSentence.length + 1 >
+        MAX_CHUNK_LENGTH
       ) {
         chunks.push(currentChunk.trim());
         currentChunk = "";
       }
       
       if (cleanSentence.length > MAX_CHUNK_LENGTH) {
-        
         if (currentChunk) {
           chunks.push(currentChunk.trim());
           currentChunk = "";
@@ -61,17 +63,16 @@ export class SpeechService {
         let segment = "";
         
         for (const word of words) {
-          
           if (
             segment &&
-            segment.length + word.length + 1 > MAX_CHUNK_LENGTH
+            segment.length + word.length + 1 >
+            MAX_CHUNK_LENGTH
           ) {
             chunks.push(segment.trim());
             segment = "";
           }
           
           segment += `${word} `;
-          
         }
         
         if (segment.trim()) {
@@ -82,7 +83,6 @@ export class SpeechService {
       }
       
       currentChunk += `${cleanSentence} `;
-      
     }
     
     if (currentChunk.trim()) {
@@ -93,16 +93,12 @@ export class SpeechService {
   }
   
   getVoices() {
-    
-    if (!this.supported) {
-      return [];
-    }
+    if (!this.supported) return [];
     
     return this.synthesis.getVoices();
   }
   
   setVoice(voiceURI) {
-    
     const voice = this.getVoices().find(
       item => item.voiceURI === voiceURI
     );
@@ -111,17 +107,14 @@ export class SpeechService {
   }
   
   setRate(rate) {
-    
     this.rate = Math.min(2, Math.max(0.5, Number(rate)));
   }
   
   setPitch(pitch) {
-    
     this.pitch = Math.min(2, Math.max(0.5, Number(pitch)));
   }
   
   speak(text) {
-    
     if (!this.supported) {
       this.onError("Speech is not supported by this browser.");
       return;
@@ -147,17 +140,23 @@ export class SpeechService {
     this.isPlaying = true;
     this.isPaused = false;
     
+    const playbackId = this.playbackId;
+    
     this.onStateChange("playing");
     
-    this.speakNext();
+    this.speakNext(playbackId);
   }
   
-  speakNext() {
-    
-    if (!this.isPlaying) return;
+  speakNext(playbackId = this.playbackId) {
+    if (
+      !this.isPlaying ||
+      this.isPaused ||
+      playbackId !== this.playbackId
+    ) {
+      return;
+    }
     
     if (this.currentIndex >= this.chunks.length) {
-      
       this.isPlaying = false;
       this.isPaused = false;
       
@@ -179,18 +178,26 @@ export class SpeechService {
     }
     
     utterance.onend = () => {
-      
-      if (!this.isPlaying || this.isPaused) return;
+      if (
+        playbackId !== this.playbackId ||
+        !this.isPlaying ||
+        this.isPaused
+      ) {
+        return;
+      }
       
       this.currentIndex += 1;
       
-      this.speakNext();
-      
+      this.speakNext(playbackId);
     };
     
     utterance.onerror = event => {
+      if (playbackId !== this.playbackId) return;
       
-      if (event.error === "canceled" || event.error === "interrupted") {
+      if (
+        event.error === "canceled" ||
+        event.error === "interrupted"
+      ) {
         return;
       }
       
@@ -199,40 +206,69 @@ export class SpeechService {
       
       this.onStateChange("error");
       this.onError("Speech playback encountered an error.");
-      
     };
     
     this.synthesis.speak(utterance);
   }
   
   pause() {
-    
-    if (!this.supported || !this.isPlaying || this.isPaused) {
+    if (
+      !this.supported ||
+      !this.isPlaying ||
+      this.isPaused
+    ) {
       return;
     }
     
-    this.synthesis.pause();
-    
     this.isPaused = true;
+    
+    this.synthesis.pause();
     
     this.onStateChange("paused");
   }
   
   resume() {
-    
-    if (!this.supported || !this.isPaused) {
+    if (
+      !this.supported ||
+      !this.isPaused ||
+      !this.chunks.length
+    ) {
       return;
     }
     
-    this.synthesis.resume();
+    // Invalidate callbacks from the previous utterance.
+    this.playbackId += 1;
+    
+    const playbackId = this.playbackId;
+    
+    clearTimeout(this.resumeTimer);
+    
+    // Clear a potentially stuck browser speech queue.
+    this.synthesis.cancel();
     
     this.isPaused = false;
     this.isPlaying = true;
     
     this.onStateChange("playing");
+    
+    // Give the browser time to clear the old utterance.
+    this.resumeTimer = setTimeout(() => {
+      if (
+        playbackId !== this.playbackId ||
+        !this.isPlaying ||
+        this.isPaused
+      ) {
+        return;
+      }
+      
+      this.speakNext(playbackId);
+    }, RESUME_DELAY);
   }
   
   stop() {
+    this.playbackId += 1;
+    
+    clearTimeout(this.resumeTimer);
     
     if (this.supported) {
       this.synthesis.cancel();
@@ -246,5 +282,4 @@ export class SpeechService {
     
     this.onStateChange("stopped");
   }
-  
 }
