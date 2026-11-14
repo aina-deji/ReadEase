@@ -522,11 +522,13 @@ body {
   background: linear-gradient(135deg, #FFFFFF 0%, #FBFAF5 100%);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
+  width: 100%;
 }
 
 .speech-info {
   flex: 1 !important;
-  min-width: 0 !important; /* Crucial: allows text to shrink and wrap */
+  min-width: 0 !important;
+  width: 100%;
 }
 
 .speech-info > div {
@@ -1097,7 +1099,9 @@ body {
   background: #D9EBE1;
 }
 
-/* ---------- Responsive & Mobile Fixes ---------- */
+/* =========================================================
+   MOBILE OVERRIDES (Fixes Swipeable Row & Header)
+   ========================================================= */
 @media (max-width: 800px) {
   .reading-card {
     border-radius: 16px;
@@ -1107,34 +1111,8 @@ body {
     padding: 22px 18px;
   }
 
-  /* Swipeable toolbar */
-  .reader-toolbar {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 12px !important;
-  }
-  #editDocumentButton {
-    width: 100%;
-    justify-content: center;
-  }
-  .reader-tools {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    padding-bottom: 8px !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Hide scrollbar Firefox */
-  }
-  .reader-tools::-webkit-scrollbar {
-    display: none; /* Hide scrollbar Chrome/Safari */
-  }
-  .reader-tools > button {
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-  }
-
-  /* Mobile Header Redesign */
-  .topbar {
+  /* 1. Force header to stay visible unless explicitly in Focus Mode */
+  body:not(.focus-mode) .topbar {
     display: flex !important;
     padding: 0 16px !important;
     height: 64px !important;
@@ -1156,7 +1134,7 @@ body {
   }
   .breadcrumb span:first-child,
   .breadcrumb-divider {
-    display: none !important; /* Hide "Workspace /" on mobile */
+    display: none !important;
   }
   .breadcrumb strong {
     background: var(--color-primary-soft-2) !important;
@@ -1169,7 +1147,49 @@ body {
     text-overflow: ellipsis;
   }
   .topbar-right {
-    display: none !important; /* Hide the right-side indicator on mobile */
+    display: none !important;
+  }
+
+  /* 2. PERFECT SWIPEABLE TOOLBAR (Starts from Left) */
+  .reader-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  #editDocumentButton {
+    width: 100%;
+    justify-content: center;
+  }
+  .reader-tools {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    justify-content: flex-start !important; /* Forces scroll to start at A- */
+    padding-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+  }
+  .reader-tools::-webkit-scrollbar {
+    display: none; /* Hide scrollbar Chrome/Safari */
+  }
+  .reader-tools > button, .reader-tools > .icon-button {
+    flex-shrink: 0 !important; /* Prevents squishing */
+    white-space: nowrap !important;
+  }
+
+  /* 3. Speech Player overlap fix */
+  .speech-player {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+  }
+  .speech-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  .speech-controls {
+    flex-shrink: 0 !important;
   }
 }
 
@@ -1177,19 +1197,15 @@ body {
   .page-content {
     padding: 24px 14px 60px;
   }
-
   .reading-card {
     padding: 24px 18px;
   }
-
   .revision-stat-card__value {
     font-size: 1.5rem;
   }
-
   .upload-dropzone {
     padding: 26px 16px 18px;
   }
-
   .annotation-toolbar {
     max-width: calc(100vw - 16px);
   }
