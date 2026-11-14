@@ -7,40 +7,67 @@ function createId() {
     `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export class AnnotationService {
+async function readAnnotations() {
+  const stored = await database.get(STORAGE_KEY, []);
   
+  return Array.isArray(stored) ? stored : [];
+}
+
+async function saveAnnotations(annotations, errorMessage) {
+  const saved = await database.set(STORAGE_KEY, annotations);
+  
+  if (!saved) {
+    throw new Error(errorMessage);
+  }
+}
+
+export class AnnotationService {
   async getAll(documentId) {
-    const annotations = await database.get(STORAGE_KEY, []);
+    if (!documentId) return [];
     
-    return annotations.filter(
-      item => item.documentId === documentId
-    );
+    const annotations = await readAnnotations();
+    
+    return annotations
+      .filter(item => item.documentId === documentId)
+      .sort((a, b) =>
+        new Date(a.createdAt || 0) -
+        new Date(b.createdAt || 0)
+      );
   }
   
   async add(documentId, annotation) {
-    const annotations = await database.get(STORAGE_KEY, []);
+    if (!documentId) {
+      throw new TypeError("A document ID is required.");
+    }
+    
+    if (!annotation || !annotation.type) {
+      throw new TypeError("An annotation type is required.");
+    }
+    
+    const annotations = await readAnnotations();
+    
+    const now = new Date().toISOString();
     
     const item = {
       id: createId(),
       documentId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
       ...annotation
     };
     
     annotations.push(item);
     
-    const saved = await database.set(STORAGE_KEY, annotations);
-    
-    if (!saved) {
-      throw new Error("Could not save annotation.");
-    }
+    await saveAnnotations(
+      annotations,
+      "Could not save annotation."
+    );
     
     return item;
   }
   
   async update(id, changes) {
-    const annotations = await database.get(STORAGE_KEY, []);
+    const annotations = await readAnnotations();
     
     const index = annotations.findIndex(
       item => item.id === id
@@ -56,29 +83,30 @@ export class AnnotationService {
       updatedAt: new Date().toISOString()
     };
     
-    const saved = await database.set(STORAGE_KEY, annotations);
-    
-    if (!saved) {
-      throw new Error("Could not update annotation.");
-    }
+    await saveAnnotations(
+      annotations,
+      "Could not update annotation."
+    );
     
     return annotations[index];
   }
   
   async remove(id) {
-    const annotations = await database.get(STORAGE_KEY, []);
+    const annotations = await readAnnotations();
     
     const updated = annotations.filter(
       item => item.id !== id
     );
     
-    const saved = await database.set(STORAGE_KEY, updated);
-    
-    if (!saved) {
-      throw new Error("Could not delete annotation.");
+    if (updated.length === annotations.length) {
+      return false;
     }
+    
+    await saveAnnotations(
+      updated,
+      "Could not delete annotation."
+    );
     
     return true;
   }
-  
 }
