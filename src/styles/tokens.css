@@ -1,36 +1,40 @@
 :root {
-  /* Brand */
+  /* ============ BRAND — forest green + terracotta ============ */
+  --color-primary: #2C5F4F;
+  --color-primary-dark: #1E4538;
+  --color-primary-darker: #163329;
+  --color-primary-soft: #E5EFEA;
+  --color-primary-soft-2: #F0F6F3;
+  --color-primary-ring: rgba(44, 95, 79, 0.25);
   
-  --color-primary: #6257d9;
-  --color-primary-dark: #5045c5;
-  --color-primary-soft: #eeecff;
+  /* Warm accent — used for highlights, small flourishes */
+  --color-accent: #C17A3C;
+  --color-accent-soft: #FBF1E5;
+  --color-accent-dark: #A1612D;
   
-  /* Backgrounds */
+  /* ============ BACKGROUNDS — warm paper ============ */
+  --color-background: #F7F5EF;
+  --color-surface: #FFFFFF;
+  --color-surface-soft: #F4F2EC;
+  --color-surface-warm: #FDFCF9;
   
-  --color-background: #f8f9fc;
-  --color-surface: #ffffff;
-  --color-surface-soft: #f5f6fa;
+  /* ============ TEXT — warm charcoal ============ */
+  --color-text: #1F1D18;
+  --color-text-secondary: #5A564E;
+  --color-text-muted: #8C887E;
   
-  /* Text */
+  /* ============ BORDERS ============ */
+  --color-border: #E8E5DC;
+  --color-border-strong: #D6D2C5;
   
-  --color-text: #202238;
-  --color-text-secondary: #71758a;
-  --color-text-muted: #9699aa;
+  /* ============ STATUS ============ */
+  --color-success: #2E8B57;
+  --color-success-soft: #E6F4EC;
+  --color-danger: #C5483D;
+  --color-danger-soft: #FBEDEC;
   
-  /* Borders */
-  
-  --color-border: #e9eaf0;
-  --color-border-strong: #dcdde7;
-  
-  /* Status */
-  
-  --color-success: #269b71;
-  --color-success-soft: #e8f7f0;
-  --color-danger: #d94f5c;
-  
-  /* Typography */
-  
-  --font-ui: "DM Sans", system-ui, sans-serif;
+  /* ============ TYPOGRAPHY ============ */
+  --font-ui: "DM Sans", system-ui, -apple-system, sans-serif;
   --font-reading: "Source Serif 4", Georgia, serif;
   
   --font-size-xs: 0.75rem;
@@ -39,10 +43,9 @@
   --font-size-lg: 1.125rem;
   --font-size-xl: 1.375rem;
   --font-size-2xl: 1.75rem;
-  --font-size-3xl: clamp(1.8rem, 4vw, 2.5rem);
+  --font-size-3xl: clamp(2rem, 4.2vw, 2.7rem);
   
-  /* Spacing */
-  
+  /* ============ SPACING ============ */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -53,27 +56,31 @@
   --space-10: 2.5rem;
   --space-12: 3rem;
   
-  /* Radius */
-  
+  /* ============ RADIUS ============ */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 22px;
+  --radius-full: 999px;
   
-  /* Shadows */
-  
-  --shadow-sm: 0 2px 8px rgba(31, 35, 65, 0.04);
-  
+  /* ============ SHADOWS — warm-tinted depth ============ */
+  --shadow-xs: 0 1px 2px rgba(40, 35, 25, 0.04);
+  --shadow-sm:
+    0 1px 3px rgba(40, 35, 25, 0.05),
+    0 1px 2px rgba(40, 35, 25, 0.03);
   --shadow-md:
-    0 8px 28px rgba(31, 35, 65, 0.06);
+    0 4px 16px rgba(40, 35, 25, 0.06),
+    0 2px 4px rgba(40, 35, 25, 0.03);
+  --shadow-lg:
+    0 14px 36px rgba(40, 35, 25, 0.08),
+    0 4px 10px rgba(40, 35, 25, 0.04);
+  --shadow-focus: 0 0 0 3px var(--color-primary-ring);
   
-  /* Layout */
+  /* ============ LAYOUT ============ */
+  --sidebar-width: 264px;
+  --topbar-height: 64px;
   
-  --sidebar-width: 250px;
-  --topbar-height: 68px;
-  
-  /* Motion */
-  
-  --transition-fast: 150ms ease;
-  --transition-normal: 220ms ease;
+  /* ============ MOTION ============ */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 240ms cubic-bezier(0.4, 0, 0.2, 1);
 }
