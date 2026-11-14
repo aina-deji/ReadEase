@@ -1321,3 +1321,34 @@ export function initializeApp() {
   navigateTo(initialRoute.page, { history: false });
 
 }
+
+
+// ==========================================
+// CUSTOM SCREENSHOT BRIDGE (For Viewport Simulator)
+// ==========================================
+window.addEventListener("message", (event) => {
+  // Listen for the simulator's request
+  if (event.data === "READEASE_CAPTURE_REQUEST") {
+    
+    // Clone the document to avoid mutating the actual page
+    const clone = document.documentElement.cloneNode(true);
+    
+    // Remove scripts to prevent double-execution in the hidden iframe
+    clone.querySelectorAll('script').forEach(s => s.remove());
+    
+    // Get all current CSS links (make them absolute so they work in the simulator)
+    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .map(link => link.href);
+      
+    const inlineStyles = Array.from(document.querySelectorAll('style'))
+      .map(style => style.innerHTML);
+
+    // Send the exact current HTML and Styles back
+    event.source.postMessage({
+      type: "READEASE_CAPTURE_RESPONSE",
+      html: clone.outerHTML,
+      externalStyles: styles,
+      inlineStyles: inlineStyles
+    }, "*");
+  }
+});
