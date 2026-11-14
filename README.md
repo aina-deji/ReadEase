@@ -121,14 +121,15 @@ The project uses practical, purpose-built logic rather than requiring a
 paid AI API for its core learning functionality.
 
 ## Getting Started
+live URL [https://aina-deji.github.io/ReadEase](https://aina-deji.github.io/ReadEase)
 
 ### 1. Clone the repository
 
 ``` bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/aina-deji/ReadEase.git
 ```
 
-Replace `YOUR_REPOSITORY_URL` with the actual repository URL.
+
 
 ### 2. Enter the project directory
 
@@ -160,36 +161,41 @@ learning logic, and supporting services.
 
 ``` text
 ReadEase/
-│
+├── README.md
 ├── index.html
 ├── public/
-│   ├── favicon.svg
-│   └── icons/
-│
-├── src/
-│   ├── algorithms/
-│   │   ├── clozeGenerator.js
-│   │   ├── sentenceScorer.js
-│   │   ├── spacedRepetition.js
-│   │   ├── termExtractor.js
-│   │   └── textSegmenter.js
-│   │
-│   ├── core/
-│   ├── config/
-│   ├── services/
-│   ├── ui/
-│   ├── app.js
-│   └── main.js
-│
-├── styles/
-│   ├── accessibility.css
-│   ├── base.css
-│   ├── components.css
-│   ├── layout.css
-│   ├── responsive.css
-│   └── tokens.css
-│
-└── service-worker.js
+│   └── favicon.svg
+└── src/
+    ├── algorithms/
+    │   ├── clozeGenerator.js
+    │   ├── sentenceScorer.js
+    │   ├── spacedRepetition.js
+    │   ├── termExtractor.js
+    │   └── textSegmenter.js
+    ├── app.js
+    ├── core/
+    │   └── dom.js
+    ├── main.js
+    ├── services/
+    │   ├── learning/
+    │   │   ├── annotationService.js
+    │   │   ├── revisionService.js
+    │   │   └── selectionService.js
+    │   ├── speech/
+    │   │   └── speechService.js
+    │   └── storage/
+    │       └── database.js
+    ├── styles/
+    │   ├── accessibility.css
+    │   ├── base.css
+    │   ├── components.css
+    │   ├── layout.css
+    │   ├── polish.css
+    │   ├── responsive.css
+    │   └── tokens.css
+    └── ui/
+        ├── annotations.js
+        └── flashcards.js
 ```
 
 ## Accessibility and Inclusion
