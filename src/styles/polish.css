@@ -1229,3 +1229,52 @@ body {
     opacity: 1;
   }
 }
+/* =========================================================
+   MOBILE SPEECH PLAYER FIX (Overrides accessibility.css)
+   ========================================================= */
+@media (max-width: 800px) {
+  .speech-player {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .speech-info {
+    display: flex !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    width: auto !important; 
+  }
+
+  .speech-info > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 100% !important;
+  }
+
+  .speech-info strong,
+  .speech-info span {
+    white-space: normal !important; /* Forces text to wrap naturally */
+    line-height: 1.4 !important;
+  }
+  
+  .speech-controls {
+    width: auto !important; /* Kills the 100% width causing the overlap */
+    flex-shrink: 0 !important; /* Stops the button from being squished */
+    margin: 0 !important;
+  }
+  
+  .speech-toggle-button {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+    margin: 0 !important;
+  }
+}
